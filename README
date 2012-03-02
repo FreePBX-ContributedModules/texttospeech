@@ -1,0 +1,522 @@
+############################################################################
+TextToSpeech Module for FreePBX
+############################################################################
+
+Original Author: _xo_ - Xavier Ourciere xourciere[at]propolys[dot]com
+Original Release: 2006-07-06
+
+Current Modder: JakFrost
+
+Discussion Thread: http://www.freepbx.org/forum/freepbx/development/texttospeech-module-updated-need-a-little-help-and-advice
+
+Original Ticket: http://www.freepbx.org/trac/ticket/1012
+
+Contributed Modules: http://www.freepbx.org/support/documentation/module-documentation/third-party-unsupported-modules
+Direct Mirror: http://mirror.freepbx.org/modules/release/contributed_modules/
+
+============================================================================
+Description
+============================================================================
+
+This module allows the creation of a Text To Speech entry that will create a recorded sound file that can then be used to create a custom System Recording so it can be placed inside an Annoucement for usage in a IVR.  Additionally, these Text To Speech entries can be used as regular destinations.  This module uses pre-installed speech synthesis engines on the system to pre-record any message typed into the Text field into a sound file that will be saved in the system.  The files are cached in the "sounds/texttospeech/" folder to provide better playback performance, lower processor utilization during usage, and allow multiple concurrent usage without having to purchase multiple licenses for commerical voice engines.  The module also manages the creation and deletion of the cached sound files when Text To Speech entries are added, updated, or deleted.
+
+The recommended usage of this module is to create Text To Speech entries to create the sound files in the "sounds/texttospeech/" folder, then to create System Recordings from those sound files, and then to create Announcements from the System Recordings.  After that create the IVR menus with the Announcements.  You can then change the content of the Text To Speech entries while keeping the Names the same and creating new sound files, thus updating the rest of the Sound Recordings -> Announcements -> IVR menus without having to re-create the menu structure again.  The module can still be used as a generic destination.
+
+============================================================================
+Information
+============================================================================
+
+Readme: /var/www/html/admin/modules/texttospeech/README
+Module: /var/www/html/admin/modules/texttospeech/ (*.php, *.sql, *.xml)
+AGI Script: /var/list/asterisk/agi-bin/texttospeech.agi
+
+Created Sound and Text: /var/lib/asterisk/sounds/texttospeech/ *.txt, *.wav
+
+Database: asterisk
+Table: texttospeech
+Database Files: /var/lib/mysql/asterisk/texttospeech.* (.frm, .MYD, .MYI)
+
+
+
+============================================================================
+Engines
+============================================================================
+
+Some of the speech synthesizers support the Speech Synthesis Markup Language (SSML) and allow the usage of XML markup tags such as voice, emphasis, break, prosody, phoneme and others to modify the sound of the speaking voice.  The other engines.
+
+W3C - Speech Synthesis Markup Language (SSML)
+http://www.w3.org/TR/speech-synthesis/
+
+The installation instructions below in the "Install" sections can usually be cut-and-pasted into a terminal window for a root session and they will install the packages.
+
+
+
+============================================================================
+swift (by Cepstral)
+============================================================================
+
+Distribution: Commercial ($29.99 USD per voice)
+SSML Support: Yes
+
+Homepage: http://cepstral.com/
+
+SSML: http://cepstral.com/cgi-bin/support?page=ssml
+Demos: http://cepstral.com/demos/
+
+Voices: http://cepstral.com/cgi-bin/downloads?type=1124808311
+Voices (8khz): http://cepstral.com/cgi-bin/downloads?type=1143746987
+
+Notes: A very good sounding engine especially with the Diane voice and the Liquid Love effect and normal or slow speaking rate, creating a very sexy sounding natural voice.  The Allison voice is also great and sounds similar to the built-in voices that come with Asterisk.  My first choice for usage.  Check out the demo pages to hear the voices yourself.  Use the same paragraph to correctly compare multiple voices and not just the default text.
+
+Important: The default installation of this engine does not make any links to the actual binary which is "/opt/local/bin/swift" so it doesn't appear in the system PATH.  You need to issue the command "ln -s /usr/local/bin/swift /opt/local/bin/swift" and "ln -s /usr/bin/swift /usr/local/bin/swift" to create the link to use the engine and have it auto-detected by this module by making sure it is in the PATH.
+
+Installation Instructions: 
+
+Nerd Vittles - Allison’s Text-to-Speech Trifecta: Cepstral, Asterisk 1.4 or 1.6, and FreePBX 2.4
+by Ward Mundy
+http://nerdvittles.com/index.php?p=202
+
+Changed Allison voice to Diane in instructions below, due to a personal preference that Diane sounds more natural than Allison.
+
+----------------------------------------------------------------------------
+Install (Source) - Linux 32-bit
+----------------------------------------------------------------------------
+
+cd /root
+wget http://downloads.cepstral.com/cepstral/i386-linux/Cepstral_Diane-8kHz_i386-linux_5.1.0.tar.gz
+tar -zxvf Cepstral_Diane-8kHz_i386-linux_5.1.0.tar.gz
+cd Cepstral_Diane-8kHz_i386-linux_5.1.0
+./install.sh agree /opt/swift
+ln -s /opt/swift/bin/swift /usr/bin/swift
+ln -s /usr/bin/swift /usr/local/bin/swift
+
+# Type "yes" to the license without the dashes or double-quotes to accept the license.
+
+which swift
+swift --help
+
+cd ..
+rm -rf Cepstral_Diane-8kHz_i386-linux_5.1.0/
+
+----------------------------------------------------------------------------
+Install (Source) - Linux 64-bit
+----------------------------------------------------------------------------
+
+cd /root
+wget http://downloads.cepstral.com/cepstral/x86-64-linux/Cepstral_Diane-8kHz_x86-64-linux_5.1.0.tar.gz
+tar -zxvf Cepstral_Diane-8kHz_x86-64-linux_5.1.0.tar.gz
+cd Cepstral_Diane-8kHz_x86-64-linux_5.1.0
+./install.sh agree /opt/swift
+ln -s /opt/swift/bin/swift /usr/bin/swift
+ln -s /usr/bin/swift /usr/local/bin/swift
+
+# Type "yes" to the license without the dashes or double-quotes to accept the license.
+
+which swift
+swift --help
+
+cd ..
+rm -rf Cepstral_Diane-8kHz_x86-64-linux_5.1.0/
+
+----------------------------------------------------------------------------
+Shared Libraries Config
+----------------------------------------------------------------------------
+
+echo /opt/swift/lib>> /etc/ld.so.conf.d/cepstral.conf
+ldconfig
+
+----------------------------------------------------------------------------
+Voice Registration
+----------------------------------------------------------------------------
+
+# Commercial engine requires a license per voice otherwise there is a nag message before every recording.
+
+swift --reg-voice
+
+# Type in everything exactly as shown in the license file or web page.  Don't write the "for Linux" name for the Voice field.
+
+Your Name: John Q. Public
+Company (if applicable): Acme Widgets
+Voice: Diane-8kHz
+License Key: xx-xxxxxx-xxxxxx-xxxxxx-xxxxxx-xxxxxx
+
+----------------------------------------------------------------------------
+Install (Source) - Asterisk 1.4 (app_swift.so)
+----------------------------------------------------------------------------
+
+# Installation of this Asterisk Application is not necessary for the module to use this engine since it is accessesed through the installed binary image and not Asterisk application, but it is good to install it for completeness.
+
+cd /usr/src
+wget http://pbxinaflash.net/source/app_swift/app_swift-1.4.2.tar.gz
+tar -zxvf app_swift-1.4.2*
+cd app_swift-1.4.2
+make
+make install
+
+# service asterisk restart
+
+amportal restart
+sleep 3s
+asterisk -rx 'core show application swift'
+
+sed -i 's/David-8kHz/Diane-8kHz/' /etc/asterisk/swift.conf
+
+cd ..
+rm -rf app_swift-1.4.2/
+
+----------------------------------------------------------------------------
+Install (Source) - Asterisk 1.6 (app_swift.so)
+----------------------------------------------------------------------------
+
+# Installation of this Asterisk Application is not necessary for the module to use this engine since it is accessesed through the installed binary image and not Asterisk application, but it is good to install it for completeness.
+
+cd /usr/src
+wget http://pbxinaflash.net/source/app_swift/app_swift-1.6.2.tar.gz
+tar -zxvf app_swift-1.6.2*
+cd app_swift-1.6.2
+make
+make install
+cp swift.conf.sample /etc/asterisk/swift.conf
+chown asterisk:asterisk /etc/asterisk/swift.conf
+
+# service asterisk restart
+
+amportal restart
+sleep 3s
+asterisk -rx 'core show applications swift'
+
+sed -i 's/David-8kHz/Diane-8kHz/' /etc/asterisk/swift.conf
+
+
+============================================================================
+espeak
+============================================================================
+
+Distribution: Open Source (GPL)
+SSML Support: Yes
+
+Homepage: http://espeak.sourceforge.net/
+Asterisk App: http://asterisk-espeak.sourceforge.net/
+Dependancy: http://www.mega-nerd.com/libsndfile/
+
+SSML: http://espeak.sourceforge.net/ssml.html
+
+Note: A little more advanced engine but only produces 22 khz rate files that have to be modified with 'sox -r 8000'.  It supports SSML and has a decent sounding voice.  Sounds a lot like flite and text2wave.
+
+Important: This engine tries to compile with "libportaudio" that might not exist on many system so a modification in the "src/Makefile" is required to comment out the "AUDIO = portaudio" line.
+
+----------------------------------------------------------------------------
+Install (Source) - Linux
+----------------------------------------------------------------------------
+
+# espeak: http://espeak.sourceforge.net/
+
+cd /root
+wget http://kent.dl.sourceforge.net/sourceforge/espeak/espeak-1.41.01-source.zip
+unzip espeak-1.41.01-source.zip
+cd espeak-1.41.01-source/src/
+sed -i 's/^AUDIO = portaudio/#&/' Makefile
+make
+make install
+
+which espeak
+espeak --help
+
+cd ../../
+rm -rf espeak-1.41.01-source/
+
+
+----------------------------------------------------------------------------
+Install (Source) - Asterisk 1.4
+----------------------------------------------------------------------------
+
+# Installation of this Asterisk Application is not necessary for the module to use this engine since it is accessesed through the installed binary image and not Asterisk application, but it is good to install it for completeness.
+
+# LibSndFile: http://www.mega-nerd.com/libsndfile/
+
+cd /root
+
+wget http://www.mega-nerd.com/libsndfile/libsndfile-1.0.20.tar.gz
+tar -xzvf libsndfile-1.0.20.tar.gz
+cd libsndfile-1.0.20/
+./configure
+make
+make install
+
+ldconfig
+which sndfile-info
+sndfile-info -h
+
+cd ..
+rm -rf cd libsndfile-1.0.20/
+
+# LibSampleRate: http://www.mega-nerd.com/SRC/download.html
+
+wget http://www.mega-nerd.com/SRC/libsamplerate-0.1.7.tar.gz
+tar -xzvf libsamplerate-0.1.7.tar.gz
+cd libsamplerate-0.1.7/
+./configure
+make
+make install
+
+ldconfig
+
+ls /usr/local/lib/libsamplerate.*
+
+cd ..
+rm -rf libsamplerate-0.1.7/
+
+# Instructions: http://asterisk-espeak.sourceforge.net/
+
+wget http://downloads.sourceforge.net/project/asterisk-espeak/asterisk-espeak/0.4/asterisk-espeak-0.4.tar.gz
+tar -xzvf asterisk-espeak-0.4.tar.gz
+cd asterisk-espeak-0.4/
+
+make
+make install
+
+cd ..
+rm -rf cd asterisk-espeak-0.4/
+
+# service asterisk restart
+
+amportal restart
+sleep 3s
+asterisk -rx 'core show application espeak'
+
+----------------------------------------------------------------------------
+Install (Source) - Asterisk 1.4
+----------------------------------------------------------------------------
+
+# asterisk-espeak 1.6: http://zaf.github.com/Asterisk-eSpeak/
+
+# Don't have Asterisk 1.6 so can't test or give instructions.
+
+
+
+============================================================================
+flite (Festival Lite)
+============================================================================
+
+Distribution: Open Source (X11-Like License)
+SSML Support: No
+
+Homepage: http://www.speech.cs.cmu.edu/flite/
+Asterisk AGI: http://asterisk-flite.sourceforge.net/
+
+Note: Pretty decent and compact engine that is easy to use and standard.  Sounds a lot like espeak and text2wave.
+
+----------------------------------------------------------------------------
+Install (Source) - Linux
+----------------------------------------------------------------------------
+
+# Instructions: http://asterisk-flite.sourceforge.net/
+
+cd /root
+wget http://www.speech.cs.cmu.edu/flite/packed/flite-1.3/flite-1.3-release.tar.gz
+wget http://asterisk-flite.sourceforge.net/extras/flite-1.3-sharedlibs.patch
+wget http://asterisk-flite.sourceforge.net/extras/flite-1.3-alsa_support.patch
+tar -xzvf flite-1.3-release.tar.gz
+cd flite-1.3-release
+patch -p1 < ../flite-1.3-sharedlibs.patch
+./configure --enable-shared
+make
+make install
+
+ln -s /usr/local/bin/flite /usr/bin/flite
+
+echo /usr/local/lib/>> /etc/ld.so.conf
+ldconfig
+
+which flite
+flite --help
+
+cd ..
+rm -rf cd flite-1.3-release/
+
+----------------------------------------------------------------------------
+Install (Source) - Asterisk
+----------------------------------------------------------------------------
+
+cd /root
+wget http://downloads.sourceforge.net/project/asterisk-flite/asterisk-flite/0.5/asterisk-flite-0.5.tar.gz
+tar -xzvf asterisk-flite-0.5.tar.gz
+cd asterisk-flite-0.5
+make
+make install
+
+# service asterisk restart
+
+amportal restart
+sleep 3s
+asterisk -rx 'core show application flite'
+
+cd ..
+rm -rf cd asterisk-flite-0.5/
+
+
+============================================================================
+text2wave (aka Festival)
+============================================================================
+
+Distribution: Open Source (X11-Like License)
+SSML Support: No
+
+Homepage: http://festvox.org/festival/
+
+Note: This is the Festival engine (aka text2wave) and it is the bigger brother of flite and sounds a lot like it and also espeak.  It is available in package form so it is easy to install on most distributions or it is already included, just search for "festival".
+
+----------------------------------------------------------------------------
+Install (Source) - Linux
+----------------------------------------------------------------------------
+
+Instructions: http://www.voip-info.org/wiki/view/Asterisk+festival+installation
+
+yum install festival
+
+which text2wave
+text2wave -h
+
+asterisk -rx 'core show application festival'
+
+
+
+============================================================================
+Revisions
+============================================================================
+
+----------------------------------------------------------------------------
+1.3.1.3 - 2009-11-25 - JakFrost
+----------------------------------------------------------------------------
+
+Fix:	Fixed Timeout 't' extenstion events and set proper gotos for extensions.  The logic was not thought out properly so it was broken.
+
+Fix:	Fixed the previous fix and removed the "_[*#0-9]!" pattern since it short-circuits on single-digit entry and replaced it with the general "_." pattern to match everything, single-digit, multiple-digit, "*" and "#" and special "h" and "i" events.  However the "." pattern does not seem to match timeout "t" events that it is supposed to so there is a separate Timeout event goto also afterwards.
+
+Note:	I read that the "_." pattern is not recommended and there are warnings produced when using it but it is absolutely the most appropriate usage for correct and forward-compatible pass-though of pressed keys and extensions from Text To Speech to IVR like destinations.  The "!" pattern cannot be used for single or multiple matches because it short-circuits to the shortest match, not the longest match.  Using multiple patterns such as "_[*#0-9]" and "_[*#0-9]." is possible that it doesn't pass through special extensions such as "i" or "h" that are not handled internally by Text To Speech module but are handled correctly by IVR.  If there are complaints then the "_." pattern can be switched to the two patters I mentioned before, but for now it is the proper pass-through solution since it is the shortest and neatest one.
+
+----------------------------------------------------------------------------
+1.3.1.2 - 2009-11-24 - JakFrost
+----------------------------------------------------------------------------
+
+Fix:	Fix for the previous fix since it allowed multiple-digit extension Direct Dialing but it broke single-digit extensions previously used the dial pattern "_X." that requires multiple-digits and now using the correct pattern "_[*#0-9]!" for one or more digits and "*" and "#" signs.
+
+----------------------------------------------------------------------------
+1.3.1.1 - 2009-11-20 - JakFrost
+----------------------------------------------------------------------------
+
+Fix:	Direct Dial now works dialing multiple digit phone extensions, not just single digit IVR menu options.
+
+----------------------------------------------------------------------------
+1.3.1.0 - 2009-11-19 - JakFrost
+----------------------------------------------------------------------------
+
+Note:	This version improves the usage even more.  You can now use Text To Speech to say the options of an IVR menu and allow Direct Dialing to those options.  Text To Speech can also be used as a destination from an IVR to an option to say a message.  In this case the Text To Speech entry should set the Destination back to the Text To Speech entry that says the menu options.  It should not use the Return to IVR option otherwise the menu options will not be played to the user because the system will jump directly to the IVR to await a key press without saying the options.  Just remember to chain Text To Speech menu options, to IVR, to Text To Speech message, to Text To Speech menu options.
+
+Add:	Added the Wait Before and After options to allow adding a pause in the speech for the number of seconds required.
+
+Add:	Added the Direct Dial to allow direct access to destination IVR extension.
+
+Add:	Added the Return to IVR option to allow return to a calling IVR when finished.
+
+Limit:	Previous version uninstall required since database schema is changed again.  I didn't code the upgrade code yet since these are Work-In-Progress versions.
+
+----------------------------------------------------------------------------
+1.3.0.0 - 2009-11-18 - JakFrost
+----------------------------------------------------------------------------
+
+Note:	The usage of this module has improved in this version.  The recommended usage of this module is to create Text To Speech entries to create the sound files in the "sounds/texttospeech/" folder, then to create System Recordings from those sound files, and then to create Announcements from the System Recordings.  After that create the IVR menus with the Announcements.  You can then change the content of the Text To Speech entries while keeping the Names the same and creating new sound files, thus updating the rest of the Sound Recordings -> Announcements -> IVR menus without having to re-create the menu structure again.  The module can still be used as a generic destination.
+
+Add:	Added the "Arguments" field to allow passing of extra arguments to the voice synthesis engine for the creation of the sound file.  The arguments are "escapeshellcmd()" escaped to prevent security problems with execution of commands.
+
+Add:	Added the "Allow Skip" and "Don't Answer Channel" options for the destination.
+
+Add:	Added "$debug" variable and code on per-function basis to allow return of extra information into the "/tmp/freepbx_debug.log" file when diagnosing module problems.
+
+Add:	Added "die_freepbx()" code for all database accesses to allow verbose output for any database related errors to make diagnosis of problems easier.
+
+Change:	Removed the "agi-bin/texttospeech.agi.php" file since it is no longer necessary since the sound file playback is done directly with the Asterisk Playback() or Background() functions depending if "Allow Skip" is enabled.
+
+Change:	The removal of the AGI script now makes the "functions.inc.php" script do the creation of the text and sound files directly after the users presses the Submit button.  The output is fairly quick with only a very slight delay for short and medium length messages.
+
+Change:	Rewrote the "page.texttospeech.php" file to make it cleaner and also to add the additional features.
+
+Change:	Changed the database structure to include new columns for the extra features.
+
+Change:	Changed the name of the text and sound files to only include the Name of the entry without the engine name, since the Name value is unique and also because it makes the creation of System Recordings out of the Text To Speech recorded files in the "texttospeech/" folder structure easier.
+
+Change:	Quoted all database field names and escaped values with "sql_formattext()" that calls PEAR DB "DB::simpleEscape()" method to prevent database injection security issues.
+
+Limit:	The previous version of the module must be uninstalled before installing this version since there is no upgrade code yet to update the SQL database to the new version from the previous version.  The text and sound filenames have also changed so the previous entries and files should be deleted also.
+
+----------------------------------------------------------------------------
+1.2.0.1 - 2009-11-15 - JakFrost
+----------------------------------------------------------------------------
+
+Fix:	Fixed the README file instructions for installation of the engines, some lines were missing, some were mistyped.
+
+Fix:	Fixed a CRITICAL error in README with installation instructions for Flite speech engine that had a typo in the command for appending the "usr/local/lib" library path to the ld.so.conf file for usage by the "ldconfig" command.  The correct command includes append ">>" redirect instead of create ">" redirect.  This bad command caused the removal of all the "/etc/ld.so.conf.d/*" files from "ldconfig" command.  The result was system wide error messages such as "PHP Warning:  PHP Startup: Unable to load dynamic library >> '/usr/lib/php/modules/mysql.so' - /usr/lib/libmysqlclient.so.15".  The correct command is: "echo /usr/local/lib/>> /etc/ld.so.conf" with double ">>".  If you experienced problems or error messages due to this bad command you can easily fix the situation by adding the line "include ld.so.conf.d/*.conf" to the top of the "/etc/ld.so.conf" file and executing "ldconfig" again to re-add all the shared library paths.
+
+Change:	Changed Cepstral "./install.sh" line to add "agree" to license and "/opt/swift" as default path to install to without prompt.
+
+----------------------------------------------------------------------------
+1.2.0.0 - 2009-11-09 - JakFrost
+----------------------------------------------------------------------------
+
+Add:	Deletion old of sound files when Text To Speech entries are deleted or updated.
+
+Add:	Addition of the espeak voice engine.
+
+Add:	README file in "/var/www/html/admin/modules/texttospeech/" with detailed descriptions, changelog, and instructions on how to install all the available sound engines.
+
+Change:	Changed all external "tts" acronyms to legible "texttospeech".
+
+Change:	Legible filenames on sound files instead of illegible MD5 sum hash names.
+
+Change:	Text stored singly in text file of unlimited size supporting plain text and XML with all punctuation and markup.
+
+Change:	Passing of Name and Engine through AGI calls in "extensions_addition.conf" and not the actual Text removing limits on size and punctuation usage.
+
+Change:	Major code clean-up and re-write, addition of comments to the code and updates to all function and variable names to create consistency.
+
+Remove:	No more base64 text encoding necessary for AGI pass-through that was added in quicky version 1.1.
+
+Remove:	Hash information is no longer useful when sound and text files are deleted on entry updates and deletions.
+
+Limit:	Name for TextToSpeech entry is still limited to AlphaNum (a-z A-Z 0-9) and Underscore (_) and Dash (-) with no spaces due to problems with spaces or special characters in "$AGI->stream_file( $soundfile )" and "$AGI->exec( Playback, $soundfile )" calls and the inability of these AGI calls to accept single or double quoted file names or PHP "escapeshellarg" or "escapeshellcmd" encoded filenames.  Nothing I can do about this limitation in Asterisk 1.4.
+
+----------------------------------------------------------------------------
+1.1 - 2009-11-04 - JakFrost
+----------------------------------------------------------------------------
+
+Add:	Deletion of sound files when Text To Speech entries are deleted.
+
+Change:	Changed all external "tts" acronyms to legible "texttospeech".
+
+Change:	Legible filenames on sound files instead of illegible MD5 sum hash names.
+
+Change:	Text stored singly in text file of unlimited size supporting plain text and XML with all punctuation and markup.
+
+Change:	Passing of Name and Engine through AGI calls in "extensions_addition.conf" and not the actual Text removing limits on size and punctuation usage.
+
+Change:	Major code clean-up and re-write, addition of comments to the code and updates to all function and variable names to create consistency.
+
+Remove:	No more base64 text encoding necessary for AGI pass-through that was added in quicky version 1.1.
+
+Remove:	Hash information is no longer useful when sound and text files are deleted on entry updates and deletions.
+
+Limit:	Name for TextToSpeech entry is still limited to AlphaNum and Underscore with no spaces due to problems with spaces or special characters in "$AGI->stream_file( $soundfile )" and "$AGI->exec( Playback, $soundfile )" calls and the inability of these AGI calls to accept single or double quoted file names or PHP "escapeshellarg" or "escapeshellcmd" encoded filenames.  Nothing I can do about this limitation in Asterisk 1.4.
+
+----------------------------------------------------------------------------
+1.0 - 2006-07-06 - _xo_ - Xavier Ourciere xourciere[at]propolys[dot]com
+----------------------------------------------------------------------------
+
+Original first release.
+
+Limit:	No punctuation or SSML markup allowed in Name or Text fields.
+
+Limit:	No deletion of sound files if TTS entries are deleted.
+
+Limit:	Illegible filenames on sound files.
+
+Limit:	Text stored doubly in text file and database record with 250-byte limit.

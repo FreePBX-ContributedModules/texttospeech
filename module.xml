@@ -1,0 +1,122 @@
+<module>
+	<rawname>texttospeech</rawname>
+	<name>Text To Speech</name>
+	<version>1.3.1.3</version>
+	<description>
+		<p>Text To Speech synthesis using Swift (Cepstral), Flite, Text2Wave (Festival) or eSpeak voice engines that are already installed on the system.  (All voice synthesis engine installation instructions in the README)</p>
+		
+		<p>Allows the creation of Text To Speech entries by adding paragraphs or sentences of text that will be played back as sound files to any caller.  Great for usage as initial destination for Incoming Route to play back a welcome announcement and also for IVR entries to play back information to the callers.  Each entry also controls destination after playback to allow a return to the IVR, forward to extension, or any other destination that is possible.  A very useful module when welcome annoucements or IVR menu items change occasionally and need to be updated with new information without having to manually re-record all the messages.</p>
+		
+		<p>Details: /var/www/html/admin/modules/texttospeech/README</p>
+	</description>
+	<type>setup</type>
+	<category>Third Party Addon</category>
+	<menuitems>
+		<texttospeech>Text To Speech</texttospeech>
+	</menuitems>
+	<location>release/texttospeech-1.3.1.3.tgz</location>
+	<info>http://www.freepbx.org/trac/ticket/1012</info>
+	<changelog>
+		*1.3.1.3 - 2009-11-25 - JakFrost*
+
+			Fix:	Fixed Timeout 't' extenstion events and set proper gotos for extensions.  The logic was not thought out properly so it was broken.
+
+			Fix:	Fixed the previous fix and removed the "_[*#0-9]!" pattern since it short-circuits on single-digit entry and replaced it with the general "_." pattern to match everything, single-digit, multiple-digit, "*" and "#" and special "h" and "i" events.  However the "." pattern does not seem to match timeout "t" events that it is supposed to so there is a separate Timeout event goto also afterwards.
+
+			Note:	I read that the "_." pattern is not recommended and there are warnings produced when using it but it is absolutely the most appropriate usage for correct and forward-compatible pass-though of pressed keys and extensions from Text To Speech to IVR like destinations.  The "!" pattern cannot be used for single or multiple matches because it short-circuits to the shortest match, not the longest match.  Using multiple patterns such as "_[*#0-9]" and "_[*#0-9]." is possible that it doesn't pass through special extensions such as "i" or "h" that are not handled internally by Text To Speech module but are handled correctly by IVR.  If there are complaints then the "_." pattern can be switched to the two patters I mentioned before, but for now it is the proper pass-through solution since it is the shortest and neatest one.
+
+		*1.3.1.2 - 2009-11-24 - JakFrost*
+			
+			Fix:	Fix for the previous fix since it allowed multiple-digit extension Direct Dialing but it broke single-digit extensions previously used the dial pattern "_X." that requires multiple-digits and now using the correct pattern "_[*#0-9]!" for one or more digits and "*" and "#" signs.
+
+		*1.3.1.1 - 2009-11-20 - JakFrost*
+
+			Fix:	Direct Dial now works dialing multiple digit phone extensions, not just single digit IVR menu options.
+
+		*1.3.1.0 - 2009-11-19 - JakFrost*
+
+			Note:	This version improves the usage even more.  You can now use Text To Speech to say the options of an IVR menu and allow Direct Dialing to those options.  Text To Speech can also be used as a destination from an IVR to an option to say a message.  In this case the Text To Speech entry should set the Destination back to the Text To Speech entry that says the menu options.  It should not use the Return to IVR option otherwise the menu options will not be played to the user because the system will jump directly to the IVR to await a key press without saying the options.  Just remember to chain Text To Speech menu options, to IVR, to Text To Speech message, to Text To Speech menu options.
+
+			Add:	Added the Wait Before and After options to allow adding a pause in the speech for the number of seconds required.
+
+			Add:	Added the Direct Dial to allow direct access to destination IVR extension.
+
+			Add:	Added the Return to IVR option to allow return to a calling IVR when finished.
+
+			Limit:	Previous version uninstall required since database schema is changed again.  I didn't code the upgrade code yet since these are Work-In-Progress versions.
+
+		*1.3.0.0 - 2009-11-18 - JakFrost*
+
+			Note:	The usage of this module has improved in this version.  The recommended usage of this module is to create Text To Speech entries to create the sound files in the "sounds/texttospeech/" folder, then to create System Recordings from those sound files, and then to create Announcements from the System Recordings.  After that create the IVR menus with the Announcements.  You can then change the content of the Text To Speech entries while keeping the Names the same and creating new sound files, thus updating the rest of the Sound Recordings -> Announcements -> IVR menus without having to re-create the menu structure again.  The module can still be used as a generic destination as before if that was a requirement.
+
+			Add:	Added the "Arguments" field to allow passing of extra arguments to the voice synthesis engine for the creation of the sound file.  The arguments are "escapeshellcmd()" escaped to prevent security problems with execution of commands.
+
+			Add:	Added the "Allow Skip" and "Don't Answer Channel" options for the destination.
+
+			Add:	Added "$debug" variable and code on per-function basis to allow return of extra information into the "/tmp/freepbx_debug.log" file when diagnosing module problems.
+
+			Add:	Added "die_freepbx()" code for all database accesses to allow verbose output for any database related errors to make diagnosis of problems easier.
+
+			Change:	Removed the "agi-bin/texttospeech.agi.php" file since it is no longer necessary since the sound file playback is done directly with the Asterisk Playback() or Background() functions depending if "Allow Skip" is enabled.
+
+			Change:	The removal of the AGI script now makes the "functions.inc.php" script do the creation of the text and sound files directly after the users presses the Submit button.  The output is fairly quick with only a very slight delay for short and medium length messages.
+
+			Change:	Rewrote the "page.texttospeech.php" file to make it cleaner and also to add the additional features.
+
+			Change:	Changed the database structure to include new columns for the extra features.
+
+			Change:	Changed the name of the text and sound files to only include the Name of the entry without the engine name, since the Name value is unique and also because it makes the creation of System Recordings out of the Text To Speech recorded files in the "texttospeech/" folder structure easier.
+
+			Change:	Quoted all database field names and escaped values with "sql_formattext()" that calls PEAR DB "DB::simpleEscape()" method to prevent database injection security issues.
+
+			Limit:	The previous version of the module must be uninstalled before installing this version since there is no upgrade code yet to update the SQL database to the new version from the previous version.  The text and sound filenames have also changed so the previous entries and files should be deleted also.
+	
+		*1.2.0.1 - 2009-11-15 - JakFrost*
+		
+			Fix:	Fixed the README file instructions for installation of the engines, some lines were missing, some were mistyped.
+
+			Fix:	Fixed a CRITICAL error in README with installation instructions for Flite speech engine that had a typo in the command for appending the "usr/local/lib" library path to the ld.so.conf file for usage by the "ldconfig" command.  The correct command includes append ">>" redirect instead of create ">" redirect.  This bad command caused the removal of all the "/etc/ld.so.conf.d/*" files from "ldconfig" command.  The result was system wide error messages such as "PHP Warning:  PHP Startup: Unable to load dynamic library >> '/usr/lib/php/modules/mysql.so' - /usr/lib/libmysqlclient.so.15".  The correct command is: "echo /usr/local/lib/>> /etc/ld.so.conf" with double ">>".  If you experienced problems or error messages due to this bad command you can easily fix the situation by adding the line "include ld.so.conf.d/*.conf" to the top of the "/etc/ld.so.conf" command and executing "ldconfig" again to re-add all the shared library paths.
+
+			Fix:	Changed Cepstral "./install.sh" line to add "agree" to license and "/opt/swift" as default path to install to without prompt.
+
+		*1.2.0.0 - 2009-11-09 - JakFrost*
+
+			Add:	Deletion old of sound files when Text To Speech entries are deleted or updated.
+
+			Add:	Addition of the espeak voice engine.
+
+			Add:	README file in "/var/www/html/admin/modules/texttospeech/" with detailed descriptions, changelog, and instructions on how to install all the available sound engines.
+
+			Change:	Changed all external "tts" acronyms to legible "texttospeech".
+
+			Change:	Legible filenames on sound files instead of illegible MD5 sum hash names.
+
+			Change:	Text stored singly in text file of unlimited size supporting plain text and XML with all punctuation and markup.
+
+			Change:	Passing of Name and Engine through AGI calls in "extensions_addition.conf" and not the actual Text removing limits on size and punctuation usage.
+
+			Change:	Major code clean-up and re-write, addition of comments to the code and updates to all function and variable names to create consistency.
+
+			Remove:	No more base64 text encoding necessary for AGI pass-through that was added in quicky version 1.1.
+
+			Remove:	Hash information is no longer useful when sound and text files are deleted on entry updates and deletions.
+
+			Limit:	Name for TextToSpeech entry is still limited to AlphaNum (a-z A-Z 0-9) and Underscore (_) and Dash (-) with no spaces due to problems with spaces or special characters in "$AGI->stream_file( $soundfile )" and "$AGI->exec( Playback, $soundfile )" calls and the inability of these AGI calls to accept single or double quoted file names or PHP "escapeshellarg" or "escapeshellcmd" encoded filenames.  Nothing I can do about this limitation in Asterisk 1.4.
+
+		*1.1 - 2009-11-04 - JakFrost*
+
+			Add:	All punctuation and SSML markup allowed through base64 encoding of Text Field to pass through "extensions_addition.conf" entries.
+
+		*1.0 - 2006-07-06 - _xo_*
+
+			First release.
+
+			Limit:	No punctuation or SSML markup allowed in Name or Text fields.
+
+			Limit:	No deletion of sound files if TTS entries are deleted.
+
+			Limit:	Illegible filenames on sound files.
+
+			Limit:	Text stored doubly in text file and database record with 250-byte limit.
+	</changelog>
+</module>
