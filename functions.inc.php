@@ -11,6 +11,9 @@
 
 $debug = false;
 
+// Asterisk Context Prefix
+$context_prefix = 'ext-texttospeech-';
+
 // Asterisk Lib Folder Get
 $astvarlib_path = $asterisk_conf['astvarlibdir'];
 
@@ -29,9 +32,7 @@ FreePBX Module Special Functions - *_get_config, *_destinations
 
 // Destinations Array Return
 function texttospeech_destinations() {
-
-		$context_prefix = 'ext-texttospeech-';
-
+	global $context_prefix;
 		foreach( texttospeech_list() as $row ){
 			$destinations[] = array( 'destination' => $context_prefix . $row['id'] . ',s,1', 'description' => $row['name'] );
 		}
@@ -42,6 +43,7 @@ function texttospeech_destinations() {
 // Extensions Configurations (Get and Set)
 function texttospeech_get_config( $pbx ) {
 
+	global $context_prefix;
 	global $ext;
 	
 	$debug = false;
@@ -51,9 +53,6 @@ function texttospeech_get_config( $pbx ) {
 	switch( $pbx ) {
 
 		case "asterisk":
-
-			$context_prefix = 'ext-texttospeech-';
-
 			foreach( texttospeech_list() as $entry ) {
 			
 				// Row All Settings Retrieve
@@ -209,7 +208,34 @@ function texttospeech_list() {
 	return $result;
 }
 
+// Get Destination
+function texttospeech_getdest( $id ) {
+	global $context_prefix;
 
+	return array($context_prefix.$id.',s,1');
+}
+
+// Get Destination Info
+function texttospeech_getdestinfo( $dest ) {
+	global $context_prefix;
+
+	if (substr(trim($dest),0,strlen($context_prefix)) == $context_prefix) {
+		$id = explode(',', $dest);
+		$id = substr($id[0], 17);
+
+		$thisid = texttospeech_get($id);
+		if (empty($thisid)) {
+			return array();
+		}
+		else {
+			return array('description' => sprintf(_("TTS: %s"), $thisid['name']),
+				'edit_url' => 'config.php?display=texttospeech&type=setup&id='.urlencode($id));
+		}
+	}
+	else {
+		return false;
+	}
+}
 
 // Get
 function texttospeech_get( $id ) {
