@@ -1,12 +1,12 @@
 <module>
 	<rawname>texttospeech</rawname>
 	<name>Text To Speech</name>
-	<version>1.3.1.4</version>
+	<version>1.3.1.5</version>
 	<description>
 		<p>Text To Speech synthesis using Swift (Cepstral), Flite, Text2Wave (Festival) or eSpeak voice engines that are already installed on the system.  (All voice synthesis engine installation instructions in the README)</p>
-		
+
 		<p>Allows the creation of Text To Speech entries by adding paragraphs or sentences of text that will be played back as sound files to any caller.  Great for usage as initial destination for Incoming Route to play back a welcome announcement and also for IVR entries to play back information to the callers.  Each entry also controls destination after playback to allow a return to the IVR, forward to extension, or any other destination that is possible.  A very useful module when welcome annoucements or IVR menu items change occasionally and need to be updated with new information without having to manually re-record all the messages.</p>
-		
+
 		<p>Details: /var/www/html/admin/modules/texttospeech/README</p>
 	</description>
 	<type>setup</type>
@@ -17,10 +17,11 @@
 	<location>contributed_modules/release/texttospeech-1.3.1.4.tgz</location>
 	<info></info>
 	<changelog>
+		*1.3.1.5* Fixes menuitem conflict
 		*1.3.1.4 - 2012-03-02 - Paul White (phwhite [at] gmail [dot] com)*
 
 			- Fixed #5648: When using a Text-To-Speech destination in aother module such
-  			  as an IVR, FreePBX notices would be created complaining that the 
+  			  as an IVR, FreePBX notices would be created complaining that the
   			  destinations used were invalid.
 
 		*1.3.1.3 - 2009-11-25 - JakFrost*
@@ -32,7 +33,7 @@
 			Note:	I read that the "_." pattern is not recommended and there are warnings produced when using it but it is absolutely the most appropriate usage for correct and forward-compatible pass-though of pressed keys and extensions from Text To Speech to IVR like destinations.  The "!" pattern cannot be used for single or multiple matches because it short-circuits to the shortest match, not the longest match.  Using multiple patterns such as "_[*#0-9]" and "_[*#0-9]." is possible that it doesn't pass through special extensions such as "i" or "h" that are not handled internally by Text To Speech module but are handled correctly by IVR.  If there are complaints then the "_." pattern can be switched to the two patters I mentioned before, but for now it is the proper pass-through solution since it is the shortest and neatest one.
 
 		*1.3.1.2 - 2009-11-24 - JakFrost*
-			
+
 			Fix:	Fix for the previous fix since it allowed multiple-digit extension Direct Dialing but it broke single-digit extensions previously used the dial pattern "_X." that requires multiple-digits and now using the correct pattern "_[*#0-9]!" for one or more digits and "*" and "#" signs.
 
 		*1.3.1.1 - 2009-11-20 - JakFrost*
@@ -76,9 +77,9 @@
 			Change:	Quoted all database field names and escaped values with "sql_formattext()" that calls PEAR DB "DB::simpleEscape()" method to prevent database injection security issues.
 
 			Limit:	The previous version of the module must be uninstalled before installing this version since there is no upgrade code yet to update the SQL database to the new version from the previous version.  The text and sound filenames have also changed so the previous entries and files should be deleted also.
-	
+
 		*1.2.0.1 - 2009-11-15 - JakFrost*
-		
+
 			Fix:	Fixed the README file instructions for installation of the engines, some lines were missing, some were mistyped.
 
 			Fix:	Fixed a CRITICAL error in README with installation instructions for Flite speech engine that had a typo in the command for appending the "usr/local/lib" library path to the ld.so.conf file for usage by the "ldconfig" command.  The correct command includes append ">>" redirect instead of create ">" redirect.  This bad command caused the removal of all the "/etc/ld.so.conf.d/*" files from "ldconfig" command.  The result was system wide error messages such as "PHP Warning:  PHP Startup: Unable to load dynamic library >> '/usr/lib/php/modules/mysql.so' - /usr/lib/libmysqlclient.so.15".  The correct command is: "echo /usr/local/lib/>> /etc/ld.so.conf" with double ">>".  If you experienced problems or error messages due to this bad command you can easily fix the situation by adding the line "include ld.so.conf.d/*.conf" to the top of the "/etc/ld.so.conf" command and executing "ldconfig" again to re-add all the shared library paths.
