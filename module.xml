@@ -1,22 +1,19 @@
 <module>
 	<rawname>texttospeech</rawname>
 	<name>Text To Speech</name>
-	<version>1.3.1.5</version>
-	<description>
-		<p>Text To Speech synthesis using Swift (Cepstral), Flite, Text2Wave (Festival) or eSpeak voice engines that are already installed on the system.  (All voice synthesis engine installation instructions in the README)</p>
-
-		<p>Allows the creation of Text To Speech entries by adding paragraphs or sentences of text that will be played back as sound files to any caller.  Great for usage as initial destination for Incoming Route to play back a welcome announcement and also for IVR entries to play back information to the callers.  Each entry also controls destination after playback to allow a return to the IVR, forward to extension, or any other destination that is possible.  A very useful module when welcome annoucements or IVR menu items change occasionally and need to be updated with new information without having to manually re-record all the messages.</p>
-
-		<p>Details: /var/www/html/admin/modules/texttospeech/README</p>
+	<version>13.0.1</version>
+	<description>Text To Speech synthesis using any of Swift (Cepstral), Flite, Text2Wave (Festival) or eSpeak voice engines that are already installed on the system. This module does not provide those engines.&lt;br /&gt;
+		Allows the creation of Text To Speech entries by adding paragraphs or sentences of text that will be played back as sound files to any caller.  Great for usage as initial destination for Incoming Route to play back a welcome announcement and also for IVR entries to play back information to the callers.  Each entry also controls destination after playback to allow a return to the IVR, forward to extension, or any other destination that is possible.  A very useful module when welcome annoucements or IVR menu items change occasionally and need to be updated with new information without having to manually re-record all the messages&lt;br /&gt; 
+		For more details view the README in this module, or, view it online at http://git.freepbx.org/projects/FPBXCN/repos/texttospeech/browse/README
 	</description>
 	<type>setup</type>
 	<category>Third Party Addon</category>
 	<menuitems>
 		<texttospeech>phwhite TTS</texttospeech>
 	</menuitems>
-	<location>contributed_modules/release/texttospeech-1.3.1.4.tgz</location>
 	<info></info>
 	<changelog>
+		*13.0.1* Compatibility fix with FreePBX 13 (No testing was done)
 		*1.3.1.5* Fixes menuitem conflict
 		*1.3.1.4 - 2012-03-02 - Paul White (phwhite [at] gmail [dot] com)*
 
@@ -126,5 +123,6 @@
 
 			Limit:	Text stored doubly in text file and database record with 250-byte limit.
 	</changelog>
-	<md5sum>b86c820e5d0b67eaf134424e8b2178cc</md5sum>
+	<location>unused</location>
+	<md5sum>unused</md5sum>
 </module>
